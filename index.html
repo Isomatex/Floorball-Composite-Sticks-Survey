@@ -22,28 +22,7 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-<script>
-function sendHeightToParent() {
-    const height = Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight
-    );
 
-    window.parent.postMessage({
-        type: "floorballSurveyHeight",
-        height: height
-    }, "*");
-}
-
-window.addEventListener("load", sendHeightToParent);
-window.addEventListener("resize", sendHeightToParent);
-
-const resizeObserver = new ResizeObserver(() => {
-    sendHeightToParent();
-});
-
-resizeObserver.observe(document.body);
-</script>
   body {
     font-family: 'Inter', -apple-system, sans-serif;
     background: var(--bg);
@@ -82,6 +61,7 @@ resizeObserver.observe(document.body);
     font-weight: 700;
     letter-spacing: -0.5px;
     margin-bottom: 8px;
+    color: var(--text) !important;
   }
 
   .survey-header h1 span { color: var(--accent); }
@@ -114,7 +94,12 @@ resizeObserver.observe(document.body);
     margin-bottom: 6px;
   }
 
-  .q-label { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .q-label {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text) !important;
+  }
 
   .q-hint { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
 
@@ -168,7 +153,11 @@ resizeObserver.observe(document.body);
   .option-card.selected .check-mark { border-color: var(--accent); background: var(--accent); }
   .check-mark svg { opacity: 0; transition: opacity 0.15s; }
   .option-card.selected .check-mark svg { opacity: 1; }
-  .option-text { font-size: 14px; font-weight: 500; }
+  .option-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text) !important;
+  }
 
   .slider-wrap { padding: 8px 0 0; }
 
@@ -250,7 +239,12 @@ resizeObserver.observe(document.body);
   }
 
   .rank-badge::before { content: "#" counter(rank); }
-  .rank-text { font-size: 14px; font-weight: 500; flex: 1; }
+  .rank-text {
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+    color: var(--text) !important;
+  }
 
   .submit-area { margin-top: 28px; text-align: center; padding-bottom: 48px; }
 
@@ -281,6 +275,15 @@ resizeObserver.observe(document.body);
   }
 
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Prevent WordPress/theme styles from overriding survey foreground colors */
+  .survey-wrap,
+  .q-block,
+  .option-card,
+  .rank-item {
+    color: var(--text);
+  }
+
 </style>
 </head>
 <body>
@@ -393,15 +396,15 @@ resizeObserver.observe(document.body);
     <div class="option-grid" id="q-flex-pref">
       <label class="option-card radio" data-val="Low kick">
         <input type="radio" name="flex" /><div class="check-mark"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#0e1117"/></svg></div>
-        <span class="option-text" style="color:#3bf08c">Low kick — quick release, wrist shot</span>
+        <span class="option-text" style="color:#3bf08c !important">Low kick — quick release, wrist shot</span>
       </label>
       <label class="option-card radio" data-val="Mid kick">
         <input type="radio" name="flex" /><div class="check-mark"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#0e1117"/></svg></div>
-        <span class="option-text" style="color:#f0883e">Mid kick — all-round</span>
+        <span class="option-text" style="color:#f0883e !important">Mid kick — all-round</span>
       </label>
       <label class="option-card radio" data-val="High kick">
         <input type="radio" name="flex" /><div class="check-mark"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#0e1117"/></svg></div>
-        <span class="option-text" style="color:#a78bfa">High kick — powerful slap shot</span>
+        <span class="option-text" style="color:#a78bfa !important">High kick — powerful slap shot</span>
       </label>
       <label class="option-card radio" data-val="No preference">
         <input type="radio" name="flex" /><div class="check-mark"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#0e1117"/></svg></div>
@@ -598,6 +601,86 @@ resizeObserver.observe(document.body);
     }
   });
 
+})();
+</script>
+
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   AUTO-HEIGHT FOR WORDPRESS IFRAME
+   Sends the real document height to the parent page so that
+   WordPress can resize the iframe and keep only one scrollbar.
+   ───────────────────────────────────────────────────────────── */
+(function () {
+  let lastHeight = 0;
+  let rafPending = false;
+
+  function measureAndSendHeight() {
+    rafPending = false;
+
+    const body = document.body;
+    const doc = document.documentElement;
+
+    if (!body || !doc) return;
+
+    const height = Math.ceil(Math.max(
+      body.scrollHeight,
+      body.offsetHeight,
+      doc.clientHeight,
+      doc.scrollHeight,
+      doc.offsetHeight
+    ));
+
+    // Avoid unnecessary postMessage loops.
+    if (height === lastHeight) return;
+    lastHeight = height;
+
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: "floorballSurveyHeight",
+        height: height
+      }, "*");
+    }
+  }
+
+  function requestHeightUpdate() {
+    if (rafPending) return;
+    rafPending = true;
+    window.requestAnimationFrame(measureAndSendHeight);
+  }
+
+  // Initial sizing.
+  document.addEventListener("DOMContentLoaded", requestHeightUpdate);
+  window.addEventListener("load", requestHeightUpdate);
+  window.addEventListener("resize", requestHeightUpdate);
+
+  // Recalculate if fonts alter text wrapping/height.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(requestHeightUpdate).catch(function () {});
+  }
+
+  // Preferred method: catches layout/content size changes.
+  if ("ResizeObserver" in window) {
+    const resizeObserver = new ResizeObserver(requestHeightUpdate);
+    resizeObserver.observe(document.documentElement);
+    resizeObserver.observe(document.body);
+  }
+
+  // Fallback/additional protection for dynamic DOM changes.
+  if ("MutationObserver" in window) {
+    const mutationObserver = new MutationObserver(requestHeightUpdate);
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    });
+  }
+
+  // A few delayed checks cover late-loading browser/layout changes.
+  setTimeout(requestHeightUpdate, 100);
+  setTimeout(requestHeightUpdate, 500);
+  setTimeout(requestHeightUpdate, 1500);
 })();
 </script>
 
