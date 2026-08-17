@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Floorball Stick Survey</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+
+  :root {
+    --bg: #0e1117;
+    --surface: #161b22;
+    --surface-hover: #1c2230;
+    --border: #2a3140;
+    --accent: #3bf08c;
+    --accent-dim: rgba(59, 240, 140, 0.12);
+    --accent-mid: rgba(59, 240, 140, 0.25);
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --warn: #f0883e;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .survey-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .survey-header {
+    text-align: center;
+    padding: 48px 24px 36px;
+    position: relative;
+  }
+
+  .survey-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .survey-header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .survey-header h1 span { color: var(--accent); }
+
+  .survey-header p {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  .q-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin-top: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .q-block:focus-within { border-color: var(--accent); }
+
+  .q-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .q-label { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+
+  .q-hint { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+
+  .text-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  .text-input::placeholder { color: var(--text-dim); opacity: 0.6; }
+  textarea.text-input { resize: vertical; min-height: 90px; }
+
+  .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 500px) { .option-grid { grid-template-columns: 1fr; } }
+
+  .option-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .option-card:hover { background: var(--surface-hover); border-color: #3a4250; }
+  .option-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .option-card input { display: none; }
+
+  .check-mark {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .option-card.radio .check-mark { border-radius: 50%; }
+  .option-card.selected .check-mark { border-color: var(--accent); background: var(--accent); }
+  .check-mark svg { opacity: 0; transition: opacity 0.15s; }
+  .option-card.selected .check-mark svg { opacity: 1; }
+  .option-text { font-size: 14px; font-weight: 500; }
+
+  .slider-wrap { padding: 8px 0 0; }
+
+  .slider-track {
+    position: relative;
+    width: 100%; height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .slider-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 50%; transition: width 0.1s; }
+
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 8px;
+    background: transparent;
+    position: absolute; top: 0; left: 0; margin: 0; cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); border: 3px solid var(--bg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4); cursor: grab;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); border: 3px solid var(--bg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4); cursor: grab;
+  }
+
+  .slider-labels { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--text-dim); }
+
+  .slider-value {
+    text-align: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px; font-weight: 700;
+    color: var(--accent); margin-bottom: 12px;
+  }
+
+  .illustration-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px; margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .illustration-box svg { max-width: 100%; height: auto; }
+
+  .illustration-caption { font-size: 12px; color: var(--text-dim); margin-top: 10px; font-style: italic; }
+
+  .rank-list { list-style: none; counter-reset: rank; }
+
+  .rank-item {
+    counter-increment: rank;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 8px;
+    cursor: grab; transition: all 0.15s; user-select: none;
+  }
+
+  .rank-item:active { cursor: grabbing; }
+  .rank-item:hover { border-color: #3a4250; }
+
+  .rank-item.dragging { opacity: 0.5; border-color: var(--accent); background: var(--accent-dim); }
+
+  .rank-item .drag-handle { color: var(--text-dim); flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
+  .drag-handle span { display: block; width: 16px; height: 2px; background: var(--text-dim); border-radius: 1px; }
+
+  .rank-badge {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 13px;
+    color: var(--accent); min-width: 20px;
+  }
+
+  .rank-badge::before { content: "#" counter(rank); }
+  .rank-text { font-size: 14px; font-weight: 500; flex: 1; }
+
+  .submit-area { margin-top: 28px; text-align: center; padding-bottom: 48px; }
+
+  .submit-btn {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
+    background: var(--accent); color: var(--bg);
+    border: none; border-radius: 8px;
+    padding: 14px 48px; cursor: pointer; transition: all 0.2s;
+  }
+
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(59,240,140,0.3); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .submit-status { margin-top: 14px; font-size: 14px; min-height: 20px; }
+  .submit-status.ok { color: var(--accent); }
+  .submit-status.err { color: var(--warn); }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--accent); color: var(--bg);
+    font-weight: 600; padding: 14px 28px;
+    border-radius: 8px; font-size: 15px;
+    opacity: 0; transition: all 0.4s cubic-bezier(.175,.885,.32,1.275);
+    pointer-events: none; z-index: 999;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="survey-wrap">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="survey-header">
+    <h1>Your stick, <span>your call</span></h1>
+    <p>Help us understand what you really need from a composite stick. 6 questions, 2 minutes tops.</p>
+  </div>
+
+  <!-- ═══ Q1 — FREE TEXT ═══ -->
+  <div class="q-block">
+    <div class="q-num">Question 1</div>
+    <div class="q-label">What stick are you currently playing with?</div>
+    <div class="q-hint">Brand, model, flex and length if you know them</div>
+    <input type="text" class="text-input" id="q-stick-model"
+           placeholder="E.g. Unihoc Iconic Carbskin 26mm, 96cm" />
+  </div>
+
+  <!-- ═══ Q2 — CHECKBOXES ═══ -->
+  <div class="q-block">
+    <div class="q-num">Question 2</div>
+    <div class="q-label">Have you ever broken or cracked a stick?</div>
+    <div class="q-hint">Check all zones where it happened</div>
+    <div class="option-grid" id="q-break-zones">
+      <label class="option-card" data-val="Blade">
+        <input type="checkbox" /><div class="check-mark"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#0e1117" stroke-width="2" fill="none"/></svg></div>
+        <span class="option-text">Blade</span>
+      </label>
+      <label class="option-card" data-val="Blade-shaft junction">
+        <input type="checkbox" /><div class="check-mark"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#0e1117" stroke-width="2" fill="none"/></svg></div>
+        <span class="option-text">Blade-shaft junction</span>
+      </label>
+      <label class="option-card" data-val="Shaft lower third">
+        <input type="checkbox" /><div class="check-mark"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#0e1117" stroke-width="2" fill="none"/></svg></div>
+        <span class="option-text">Shaft — lower third</span>
+      </label>
+      <label class="option-card" data-val="Shaft middle">
+        <input type="checkbox" /><div class="check-mark"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#0e1117" stroke-width="2" fill="none"/></svg></div>
+        <span class="option-text">Shaft — middle</span>
+      </label>
+      <label class="option-card" data-val="Shaft upper third">
+        <input type="checkbox" /><div class="check-mark"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#0e1117" stroke-width="2" fill="none"/></svg></div>
+        <span class="option-text">Shaft — upper third</span>
+      </label>
+      <label class="option-card" data-val="Never broken">
+        <input type="checkbox" /><div class="check-mark"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#0e1117" stroke-width="2" fill="none"/></svg></div>
+        <span class="option-text">Never broken one 💪</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ═══ Q3 — SLIDER ═══ -->
+  <div class="q-block">
+    <div class="q-num">Question 3</div>
+    <div class="q-label">How would you rate your stick's handling?</div>
+    <div class="q-hint">Ball feel, dribbling, reception control</div>
+    <div class="slider-wrap">
+      <div class="slider-value" id="slider-display">5</div>
+      <div class="slider-track">
+        <div class="slider-fill" id="slider-fill"></div>
+        <input type="range" min="1" max="10" value="5" id="q-handling" />
+      </div>
+      <div class="slider-labels">
+        <span>1 — Like a brick</span>
+        <span>10 — Magic wand</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Q4 — IMAGE + RADIOS ═══ -->
+  <div class="q-block">
+    <div class="q-num">Question 4</div>
+    <div class="q-label">Which flex profile do you prefer?</div>
+    <div class="q-hint">Look at the diagram below — where do you want the stick to flex most?</div>
+
+    <div class="illustration-box">
+      <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(20, 10)">
+          <text x="70" y="14" fill="#8b949e" font-size="11" font-family="Inter, sans-serif" font-weight="600">LOW KICK</text>
+          <line x1="0" y1="45" x2="160" y2="45" stroke="#2a3140" stroke-width="6" stroke-linecap="round"/>
+          <path d="M0,45 Q50,45 80,32 Q110,20 160,20" stroke="#3bf08c" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <circle cx="70" cy="35" r="4" fill="#3bf08c" opacity="0.8"/>
+          <text x="70" y="65" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Low flex</text>
+        </g>
+        <g transform="translate(200, 10)">
+          <text x="70" y="14" fill="#8b949e" font-size="11" font-family="Inter, sans-serif" font-weight="600">MID KICK</text>
+          <line x1="0" y1="45" x2="160" y2="45" stroke="#2a3140" stroke-width="6" stroke-linecap="round"/>
+          <path d="M0,45 Q40,45 80,25 Q120,45 160,45" stroke="#f0883e" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <circle cx="80" cy="27" r="4" fill="#f0883e" opacity="0.8"/>
+          <text x="80" y="65" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Mid flex</text>
+        </g>
+        <g transform="translate(380, 10)">
+          <text x="70" y="14" fill="#8b949e" font-size="11" font-family="Inter, sans-serif" font-weight="600">HIGH KICK</text>
+          <line x1="0" y1="45" x2="160" y2="45" stroke="#2a3140" stroke-width="6" stroke-linecap="round"/>
+          <path d="M0,45 Q50,45 80,30 Q130,15 160,20" stroke="#a78bfa" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <circle cx="110" cy="22" r="4" fill="#a78bfa" opacity="0.8"/>
+          <text x="80" y="65" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">High flex</text>
+        </g>
+        <g transform="translate(0, 100)">
+          <text x="280" y="10" fill="#e6edf3" font-size="11" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500">← Blade                    Grip →</text>
+          <text x="280" y="30" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">● = maximum flex point of the shaft</text>
+        </g>
+      </svg>
+      <div class="illustration-caption">Simplified diagram — the flex point changes how energy transfers to your shot</div>
+    </div>
+
+    <div class="option-grid" id="q-flex-pref">
+      <label class="option-card radio" data-val="Low kick">
+        <input type="radio" name="flex" /><div class="check-mark"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#0e1117"/></svg></div>
+        <span class="option-text" style="color:#3bf08c">Low kick — quick release, wrist shot</span>
+      </label>
+      <label class="option-card radio" data-val="Mid kick">
+        <input type="radio" name="flex" /><div class="check-mark"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#0e1117"/></svg></div>
+        <span class="option-text" style="color:#f0883e">Mid kick — all-round</span>
+      </label>
+      <label class="option-card radio" data-val="High kick">
+        <input type="radio" name="flex" /><div class="check-mark"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#0e1117"/></svg></div>
+        <span class="option-text" style="color:#a78bfa">High kick — powerful slap shot</span>
+      </label>
+      <label class="option-card radio" data-val="No preference">
+        <input type="radio" name="flex" /><div class="check-mark"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#0e1117"/></svg></div>
+        <span class="option-text">No preference</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ═══ Q5 — DRAG & DROP RANKING ═══ -->
+  <div class="q-block">
+    <div class="q-num">Question 5</div>
+    <div class="q-label">Rank these criteria from most to least important to you</div>
+    <div class="q-hint">Drag items to reorder</div>
+    <ul class="rank-list" id="q-ranking">
+      <li class="rank-item" draggable="true" data-val="Lightweight"><div class="drag-handle"><span></span><span></span><span></span></div><div class="rank-badge"></div><span class="rank-text">Lightweight</span></li>
+      <li class="rank-item" draggable="true" data-val="Durability"><div class="drag-handle"><span></span><span></span><span></span></div><div class="rank-badge"></div><span class="rank-text">Durability / break resistance</span></li>
+      <li class="rank-item" draggable="true" data-val="Handling"><div class="drag-handle"><span></span><span></span><span></span></div><div class="rank-badge"></div><span class="rank-text">Handling / ball feel</span></li>
+      <li class="rank-item" draggable="true" data-val="Shot power"><div class="drag-handle"><span></span><span></span><span></span></div><div class="rank-badge"></div><span class="rank-text">Shot power</span></li>
+      <li class="rank-item" draggable="true" data-val="Price"><div class="drag-handle"><span></span><span></span><span></span></div><div class="rank-badge"></div><span class="rank-text">Price</span></li>
+      <li class="rank-item" draggable="true" data-val="Look / design"><div class="drag-handle"><span></span><span></span><span></span></div><div class="rank-badge"></div><span class="rank-text">Look / design</span></li>
+    </ul>
+  </div>
+
+  <!-- ═══ Q6 — FREE COMMENT ═══ -->
+  <div class="q-block">
+    <div class="q-num">Question 6</div>
+    <div class="q-label">Anything else to add?</div>
+    <div class="q-hint">Feedback, suggestion, rant — all welcome</div>
+    <textarea class="text-input" id="q-comment" placeholder="Write here..."></textarea>
+  </div>
+
+  <!-- ═══ SUBMIT ═══ -->
+  <div class="submit-area">
+    <button class="submit-btn" id="submit-btn">Submit my answers</button>
+    <div class="submit-status" id="submit-status"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">✓ Answers recorded — thanks!</div>
+
+<script>
+(function() {
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  PASTE YOUR Google Apps Script deployment URL below     ║
+  // ╚══════════════════════════════════════════════════════════╝
+  const ENDPOINT = https://script.google.com/macros/s/AKfycbyMrBQADOY9THwy-liWsrgXQgzpwlqzF43QleJ0xgWR7u1CgRi-ySqXSP3vX9VtQNsTQQ/exec;
+
+  // ── Checkboxes ──
+  document.querySelectorAll('.option-card:not(.radio)').forEach(card => {
+    card.addEventListener('click', () => {
+      const cb = card.querySelector('input');
+      cb.checked = !cb.checked;
+      card.classList.toggle('selected', cb.checked);
+    });
+  });
+
+  // ── Radios ──
+  document.querySelectorAll('.option-card.radio').forEach(card => {
+    card.addEventListener('click', () => {
+      const group = card.closest('.option-grid') || card.closest('.q-block');
+      group.querySelectorAll('.option-card.radio').forEach(c => {
+        c.classList.remove('selected');
+        c.querySelector('input').checked = false;
+      });
+      card.querySelector('input').checked = true;
+      card.classList.add('selected');
+    });
+  });
+
+  // ── Slider ──
+  const slider = document.getElementById('q-handling');
+  const display = document.getElementById('slider-display');
+  const fill = document.getElementById('slider-fill');
+
+  function updateSlider() {
+    const pct = ((slider.value - 1) / 9) * 100;
+    display.textContent = slider.value;
+    fill.style.width = pct + '%';
+  }
+  slider.addEventListener('input', updateSlider);
+  updateSlider();
+
+  // ── Drag & Drop ranking ──
+  const rankList = document.getElementById('q-ranking');
+  let dragItem = null;
+
+  rankList.querySelectorAll('.rank-item').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      dragItem = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      dragItem = null;
+    });
+
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const rect = item.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (e.clientY < mid) {
+        rankList.insertBefore(dragItem, item);
+      } else {
+        rankList.insertBefore(dragItem, item.nextSibling);
+      }
+    });
+
+    // Touch support for mobile
+    let touchStartY = 0;
+    item.addEventListener('touchstart', e => {
+      dragItem = item;
+      touchStartY = e.touches[0].clientY;
+      item.classList.add('dragging');
+    }, { passive: true });
+
+    item.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const items = [...rankList.querySelectorAll('.rank-item:not(.dragging)')];
+      for (const other of items) {
+        const rect = other.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        if (touch.clientY < mid) {
+          rankList.insertBefore(dragItem, other);
+          return;
+        }
+      }
+      rankList.appendChild(dragItem);
+    }, { passive: false });
+
+    item.addEventListener('touchend', () => {
+      if (dragItem) dragItem.classList.remove('dragging');
+      dragItem = null;
+    });
+  });
+
+  // ── Submit ──
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('submit-status');
+  const toast = document.getElementById('toast');
+
+  btn.addEventListener('click', async () => {
+    const breakZones = [...document.querySelectorAll('#q-break-zones .option-card.selected')]
+      .map(c => c.dataset.val);
+
+    const flexSel = document.querySelector('#q-flex-pref .option-card.selected');
+
+    const ranking = [...document.querySelectorAll('#q-ranking .rank-item')]
+      .map((item, i) => `${i + 1}. ${item.dataset.val}`);
+
+    const payload = {
+      stick_model:     document.getElementById('q-stick-model').value.trim(),
+      break_zones:     breakZones.join(', ') || '(none)',
+      handling_score:  slider.value,
+      flex_pref:       flexSel ? flexSel.dataset.val : '(not answered)',
+      criteria_ranking: ranking.join(' | '),
+      free_comment:    document.getElementById('q-comment').value.trim()
+    };
+
+    if (!payload.stick_model) {
+      status.className = 'submit-status err';
+      status.textContent = 'Please tell us at least which stick you play with!';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    status.className = 'submit-status';
+    status.textContent = '';
+
+    try {
+      await fetch(ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      });
+
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+
+      btn.textContent = '✓ Sent';
+      status.className = 'submit-status ok';
+      status.textContent = 'Your answers have been recorded.';
+
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Submit my answers';
+      status.className = 'submit-status err';
+      status.textContent = 'Network error — please try again in a moment.';
+      console.error(err);
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
