@@ -23,6 +23,30 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+<script>
+function sendHeightToParent() {
+    const height = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+    );
+
+    window.parent.postMessage({
+        type: "floorballSurveyHeight",
+        height: height
+    }, "*");
+}
+
+window.addEventListener("load", sendHeightToParent);
+window.addEventListener("resize", sendHeightToParent);
+
+const resizeObserver = new ResizeObserver(() => {
+    sendHeightToParent();
+});
+
+resizeObserver.observe(document.body);
+</script>
+
+  
   body {
     font-family: 'Inter', -apple-system, sans-serif;
     background: var(--bg);
