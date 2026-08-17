@@ -23,30 +23,6 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-<script>
-function sendHeightToParent() {
-    const height = Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight
-    );
-
-    window.parent.postMessage({
-        type: "floorballSurveyHeight",
-        height: height
-    }, "*");
-}
-
-window.addEventListener("load", sendHeightToParent);
-window.addEventListener("resize", sendHeightToParent);
-
-const resizeObserver = new ResizeObserver(() => {
-    sendHeightToParent();
-});
-
-resizeObserver.observe(document.body);
-</script>
-
-  
   body {
     font-family: 'Inter', -apple-system, sans-serif;
     background: var(--bg);
@@ -451,7 +427,7 @@ resizeObserver.observe(document.body);
   // ╔══════════════════════════════════════════════════════════╗
   // ║  PASTE YOUR Google Apps Script deployment URL below     ║
   // ╚══════════════════════════════════════════════════════════╝
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbwp3CTg1MiDU7nyje2kpscS_ek0ZFuohq7KzSUXFbuYr5AesuHtWS7sy4qCK981vl5t/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbyMrBQADOY9THwy-liWsrgXQgzpwlqzF43QleJ0xgWR7u1CgRi-ySqXSP3vX9VtQNsTQQ/exec";
 
   // ── Checkboxes ──
   document.querySelectorAll('.option-card:not(.radio) input[type="checkbox"]').forEach(cb => {
@@ -601,6 +577,86 @@ resizeObserver.observe(document.body);
     }
   });
 
+})();
+</script>
+
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   AUTO-HEIGHT FOR WORDPRESS IFRAME
+   Sends the real document height to the parent page so that
+   WordPress can resize the iframe and keep only one scrollbar.
+   ───────────────────────────────────────────────────────────── */
+(function () {
+  let lastHeight = 0;
+  let rafPending = false;
+
+  function measureAndSendHeight() {
+    rafPending = false;
+
+    const body = document.body;
+    const doc = document.documentElement;
+
+    if (!body || !doc) return;
+
+    const height = Math.ceil(Math.max(
+      body.scrollHeight,
+      body.offsetHeight,
+      doc.clientHeight,
+      doc.scrollHeight,
+      doc.offsetHeight
+    ));
+
+    // Avoid unnecessary postMessage loops.
+    if (height === lastHeight) return;
+    lastHeight = height;
+
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: "floorballSurveyHeight",
+        height: height
+      }, "*");
+    }
+  }
+
+  function requestHeightUpdate() {
+    if (rafPending) return;
+    rafPending = true;
+    window.requestAnimationFrame(measureAndSendHeight);
+  }
+
+  // Initial sizing.
+  document.addEventListener("DOMContentLoaded", requestHeightUpdate);
+  window.addEventListener("load", requestHeightUpdate);
+  window.addEventListener("resize", requestHeightUpdate);
+
+  // Recalculate if fonts alter text wrapping/height.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(requestHeightUpdate).catch(function () {});
+  }
+
+  // Preferred method: catches layout/content size changes.
+  if ("ResizeObserver" in window) {
+    const resizeObserver = new ResizeObserver(requestHeightUpdate);
+    resizeObserver.observe(document.documentElement);
+    resizeObserver.observe(document.body);
+  }
+
+  // Fallback/additional protection for dynamic DOM changes.
+  if ("MutationObserver" in window) {
+    const mutationObserver = new MutationObserver(requestHeightUpdate);
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    });
+  }
+
+  // A few delayed checks cover late-loading browser/layout changes.
+  setTimeout(requestHeightUpdate, 100);
+  setTimeout(requestHeightUpdate, 500);
+  setTimeout(requestHeightUpdate, 1500);
 })();
 </script>
 
